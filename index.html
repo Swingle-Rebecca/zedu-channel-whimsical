@@ -16,6 +16,25 @@
 @keyframes confirm-pop{0%{transform:scale(.88)}60%{transform:scale(1.06)}100%{transform:scale(1)}}
 @keyframes spark-pop{0%{opacity:1;transform:translate(0,0) rotate(0deg) scale(.7)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(190deg) scale(.7)}}
 @media(prefers-reduced-motion:reduce){.spark{display:none}}
+
+/* Signature whimsical moment: a full-screen channel welcome reveal. */
+.join-reveal{position:fixed;inset:0;z-index:30;display:grid;place-items:center;overflow:hidden;background:rgba(18,22,65,.55);backdrop-filter:blur(9px);animation:veil-in .32s ease both}
+.join-reveal.exiting{animation:veil-out .33s ease both}
+.join-reveal-panel{position:relative;isolation:isolate;width:min(470px,calc(100vw - 36px));min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:50px 28px 36px;border-radius:28px;background:linear-gradient(155deg,#fff 0%,#f3efff 65%,#e5f8ff 100%);box-shadow:0 30px 90px #080b3070;animation:welcome-bounce .65s cubic-bezier(.2,1.4,.3,1) both}
+.join-reveal-panel:before,.join-reveal-panel:after{content:'';position:absolute;z-index:-1;border-radius:50%;border:2px solid #8b78f366;inset:-36px;animation:halo 1.3s ease-out both;pointer-events:none}
+.join-reveal-panel:after{animation-delay:.22s;border-color:#5ac8c866}
+.join-reveal-symbol{display:grid;place-items:center;width:100px;height:100px;border-radius:30px;background:#5354bd;color:white;font-size:48px;font-weight:750;box-shadow:0 14px 30px #5d60d84d;animation:symbol-pop .7s .15s cubic-bezier(.2,1.4,.3,1) both}
+.join-reveal-panel h2{font-size:30px;letter-spacing:-.04em;margin:5px 0 0;color:#262654}
+.join-reveal-panel p{font-size:16px;line-height:1.45;color:#646782;margin:0}
+.join-reveal-panel .channel-highlight{color:#4f4ec4;font-weight:750}
+.join-reveal-dismiss{border:0;border-radius:10px;background:#5054bd;color:white;padding:12px 24px;font-weight:650;margin-top:8px}
+.join-reveal-confetti{position:absolute;top:50%;left:50%;width:10px;height:17px;border-radius:3px;background:var(--piece);opacity:0;pointer-events:none;animation:reveal-confetti 1.55s var(--wait) ease-out forwards}
+@keyframes veil-in{from{opacity:0}to{opacity:1}}@keyframes veil-out{to{opacity:0}}
+@keyframes welcome-bounce{from{opacity:0;transform:translateY(55px) scale(.84)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes symbol-pop{0%{transform:scale(.4) rotate(-30deg);opacity:0}70%{transform:scale(1.14) rotate(5deg);opacity:1}100%{transform:scale(1) rotate(0)}}
+@keyframes halo{0%{transform:scale(.6);opacity:.8}100%{transform:scale(1.3);opacity:0}}
+@keyframes reveal-confetti{0%{opacity:1;transform:translate(-50%,-50%) scale(.35) rotate(0deg)}15%{opacity:1}100%{opacity:0;transform:translate(var(--x),var(--y)) rotate(var(--spin)) scale(.9)}}
+@media(prefers-reduced-motion:reduce){.join-reveal,.join-reveal-panel,.join-reveal-symbol,.join-reveal-confetti,.join-reveal-panel:before,.join-reveal-panel:after{animation:none!important}.join-reveal-confetti{display:none}}
 </style>
 </head>
 <body>
@@ -26,13 +45,47 @@
 <aside class="sidebar"><div class="side-heading">▸ Channels</div><button class="side-link">View all channels <span style="float:right">›</span></button><div class="side-hint">People</div><div class="side-person">● Mfoniso</div><div class="side-person">● Oluwakemi</div><div class="side-person">● Avi</div><div class="side-person">● Tulz</div><div class="side-person">● Victoria</div><div class="side-person">● Friends and teammates</div></aside>
 <main class="main" id="directory"><div class="inner"><div class="topline"><h1 class="title">Find your channels</h1><span class="tinybadge">Interactive design demonstration</span></div><div class="tabs" role="tablist"><button class="tab" type="button" aria-selected="false">♧ &nbsp; People</button><button class="tab active" type="button" aria-selected="true"># &nbsp; Channels</button></div><div class="search-wrap"><label for="channel-search" class="skip">Search channels</label><span class="search-icon" aria-hidden="true">⌕</span><input class="search" id="channel-search" placeholder="Search channels" autocomplete="off"><button class="clear" aria-label="Clear search" id="clear" hidden>×</button></div>
 <section class="banner" id="banner"><button class="banner-close" id="banner-close" aria-label="Dismiss information">×</button><h2>Organize your team’s conversations</h2><p>Channels are spaces for gathering all the right people, messages, files and tools. Organize them by any project, group, initiative or topic of your choosing.</p></section>
-<div class="toolbar"><div class="selects"><button class="fake-select" type="button" id="filter">All channels ⌄</button><span class="fake-select">All channel types ⌄</span></div><button class="fake-select" id="sort" type="button">A to Z ⌄</button></div><div class="list" id="list" aria-live="polite"></div><p class="motion-note"><span class="pulse"></span> <span>Motion upgrade: gentle list entrances, smooth search updates, and a little celebration when you join.</span></p></div></main></div>
+<div class="toolbar"><div class="selects"><button class="fake-select" type="button" id="filter">All channels ⌄</button><span class="fake-select">All channel types ⌄</span></div><button class="fake-select" id="sort" type="button">A to Z ⌄</button></div><div class="list" id="list" aria-live="polite"></div><p class="motion-note"><span class="pulse"></span> <span>Motion upgrade: gentle list entrances, smooth search updates, and a full-screen celebration when you join.</span></p></div></main></div>
 <script>
 const channels=[{name:'general',members:2163,description:"HNG Internship’s general channel",joined:true},{name:'announcements',members:1420,description:'Important updates for everyone',joined:true},{name:'bug-reports',members:386,description:'Report and discuss issues',joined:false},{name:'help',members:972,description:'Questions and community support',joined:false},{name:'design',members:247,description:'Share ideas and creative work',joined:false},{name:'engineering',members:645,description:'Build better things together',joined:false}];
 const input=document.querySelector('#channel-search'),list=document.querySelector('#list'),clear=document.querySelector('#clear');let onlyJoined=false,reverse=false,toastTimer;
 function esc(t){return t.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')}
 function render(){const q=input.value.trim().toLowerCase();clear.hidden=input.value.length===0;const results=channels.filter(c=>(!onlyJoined||c.joined)&&(c.name.toLowerCase().includes(q)||c.description.toLowerCase().includes(q))).sort((a,b)=>reverse?b.name.localeCompare(a.name):a.name.localeCompare(b.name));list.innerHTML=results.length?results.map((c,i)=>`<article class="channel" style="animation-delay:${Math.min(i*45,200)}ms"><div><div class="channel-name"># ${esc(c.name)}</div><div class="channel-meta"><span class="${c.joined?'joined':''}">${c.joined?'✓ Joined':'○ Not joined'}</span><span>${c.members.toLocaleString()} members</span><span class="dot">•</span><span>${esc(c.description)}</span></div></div><button class="open-channel ${c.joined?'':'join-button'}" data-channel="${esc(c.name)}" data-action="${c.joined?'view':'join'}" aria-label="${c.joined?'Preview':'Join'} ${esc(c.name)} channel">${c.joined?'View →':'Join +'} </button></article>`).join(''):`<div class="empty"><div style="font-size:30px">⌕</div><strong>No channels found</strong>Try another search, or clear your filters.</div>`}
 function toast(message){document.querySelector('.toast')?.remove();clearTimeout(toastTimer);const el=document.createElement('div');el.className='toast';el.setAttribute('role','status');el.textContent=message;document.body.appendChild(el);toastTimer=setTimeout(()=>el.remove(),2700)}
+
+let revealTimer;
+function showJoinReveal(name){
+  document.querySelector('.join-reveal')?.remove();
+  clearTimeout(revealTimer);
+  const overlay=document.createElement('div');overlay.className='join-reveal';overlay.setAttribute('role','dialog');overlay.setAttribute('aria-modal','true');overlay.setAttribute('aria-label',`Welcome to ${name}`);
+  const panel=document.createElement('div');panel.className='join-reveal-panel';
+  const mark=document.createElement('div');mark.className='join-reveal-symbol';mark.setAttribute('aria-hidden','true');mark.textContent='#';
+  const title=document.createElement('h2');title.textContent="You're in! 🎉";
+  const subtitle=document.createElement('p');subtitle.append('Welcome to ');
+  const channel=document.createElement('span');channel.className='channel-highlight';channel.textContent=`#${name}`;
+  subtitle.append(channel,'. Good conversations start here.');
+  const close=document.createElement('button');close.className='join-reveal-dismiss';close.textContent='Explore channels';
+  panel.append(mark,title,subtitle,close);overlay.appendChild(panel);
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    for(let i=0;i<32;i++){
+      const bit=document.createElement('span');bit.className='join-reveal-confetti';
+      const a=2*Math.PI*i/32;const r=170+(i%4)*24;
+      bit.style.setProperty('--x',`${Math.round(Math.cos(a)*r)}px`);
+      bit.style.setProperty('--y',`${Math.round(Math.sin(a)*r)}px`);
+      bit.style.setProperty('--spin',`${i%2?540:-440}deg`);
+      bit.style.setProperty('--wait',`${(i%6)*35}ms`);
+      bit.style.setProperty('--piece',['#7b65ee','#f3b84d','#4fc1b0','#ee89b9'][i%4]);
+      overlay.appendChild(bit);
+    }
+  }
+  const previousFocus=document.activeElement;
+  function dismiss(){clearTimeout(revealTimer);overlay.classList.add('exiting');setTimeout(()=>{overlay.remove();if(previousFocus?.isConnected)previousFocus.focus()},330)}
+  close.addEventListener('click',dismiss);overlay.addEventListener('click',e=>{if(e.target===overlay)dismiss()});
+  const escape=e=>{if(e.key==='Escape'){dismiss()}};
+  overlay.addEventListener('keydown',escape);document.body.appendChild(overlay);close.focus();
+  revealTimer=setTimeout(()=>{if(overlay.isConnected)dismiss()},4200);
+}
+
 input.addEventListener('input',render);clear.addEventListener('click',()=>{input.value='';render();input.focus()});document.querySelector('#banner-close').onclick=()=>document.querySelector('#banner').remove();document.querySelector('#filter').onclick=e=>{onlyJoined=!onlyJoined;e.currentTarget.textContent=onlyJoined?'Joined channels ⌄':'All channels ⌄';render()};document.querySelector('#sort').onclick=e=>{reverse=!reverse;e.currentTarget.textContent=reverse?'Z to A ⌄':'A to Z ⌄';render()};list.addEventListener('click',e=>{
   const b=e.target.closest('[data-channel]');if(!b)return;
   const c=channels.find(item=>item.name===b.dataset.channel);if(!c)return;
@@ -56,7 +109,7 @@ input.addEventListener('input',render);clear.addEventListener('click',()=>{input
     }
     card.appendChild(container);
   }
-  toast(`Welcome to #${c.name}! (Demo only — no real account changes)`);
+  showJoinReveal(c.name);
   setTimeout(()=>{if(!card.isConnected)return;container.remove();card.classList.remove('celebrating');b.disabled=false;b.textContent='View →';b.classList.remove('join-button');},1100);
 });document.querySelectorAll('.rail-btn,.side-link,.tab').forEach(b=>b.addEventListener('click',()=>{if(!b.classList.contains('active')&&!b.classList.contains('side-link'))toast('This prototype focuses on the Channel Directory animation')}));render();
 </script>
